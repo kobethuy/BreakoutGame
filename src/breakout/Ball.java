@@ -3,7 +3,6 @@ package breakout;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
-import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 
@@ -19,18 +18,13 @@ public class Ball{
     private double dx = 1, dy = -1;
     int ballSize = 20;
     private boolean onScreen;
-    private final double BALL_X_START = 320;
-    private final double BALL_Y_START = 360;
+    private final double BALL_X_START = BrickBreaker.WIDTH / 2 - ballSize / 2;
+    private final double BALL_Y_START = BrickBreaker.HEIGHT - 70;
     
     public Ball(){ 
 
         this.ballSize = 20;
-        
-//        x = 200;
-//        y = 200;
-//        dx = 1;
-//        dy = 3;
-        
+    
     }
 
     Ball(int i, int i0, int i1, int i2, int i3) {

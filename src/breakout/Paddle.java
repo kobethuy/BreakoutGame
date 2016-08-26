@@ -3,13 +3,8 @@ package breakout;
 
 import java.awt.Color;
 import java.awt.Font;
-import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
-import java.io.File;
-import javax.sound.sampled.AudioInputStream;
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.Clip;
 
 /**
  *
@@ -25,10 +20,10 @@ public class Paddle {
     private long widthTimer;
     private boolean altWidth;
     private double targetx;
-    private final int PADDLE_X_START = 250;
-    private final int PADDLE_Y_START = 250;
+    private final int PADDLE_X_START = (BrickBreaker.WIDTH / 2) - (width / 2);
+    private final int PADDLE_Y_START = BrickBreaker.HEIGHT - height;
     
-    public final int YPOS = BrickBreaker.HEIGHT - 100;
+    public final int YPOS = BrickBreaker.HEIGHT - 50;
     //Constructor
     public Paddle(int theWidth, int theHeight){
         altWidth = false;

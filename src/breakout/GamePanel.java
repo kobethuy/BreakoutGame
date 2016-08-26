@@ -48,11 +48,11 @@ public class GamePanel extends JPanel implements Runnable{
     private AtomicBoolean isPaused;
     
     //contructor
-    public GamePanel(){
+    public GamePanel() throws Exception{
         init();
     }
     
-    private void init(){
+    private void init() throws Exception{
         isPaused = new AtomicBoolean(true);
         
         theMap = new Map(6, 10);        
@@ -79,7 +79,7 @@ public class GamePanel extends JPanel implements Runnable{
     
     @Override
     public void run(){
-        drawStart();
+        //drawStart();
         //Loop
         
         while(running){
@@ -91,7 +91,7 @@ public class GamePanel extends JPanel implements Runnable{
             repaint();
             
             try{
-                Thread.sleep(1000/60);
+                Thread.sleep(15);
             }catch(Exception e){
                 e.printStackTrace();
             }
@@ -104,13 +104,12 @@ public class GamePanel extends JPanel implements Runnable{
         Rectangle ballRect = theBall.getRect();
         Rectangle paddleRect = thePaddle.getRect();
         
-        for(int i = 0; i < powerUps.size(); i++){
-            Rectangle puRect = powerUps.get(i).getRect();
-            
-            if(paddleRect.intersects(puRect)){
-                if(powerUps.get(i).getType() == PowerUp.WIDEPADDLE && !powerUps.get(i).getWasUsed()){
-                    thePaddle.setWidth(thePaddle.getWidth() * 2);                    
-                    powerUps.get(i).setWasUsed(true);
+        for (PowerUp powerUp : powerUps) {
+            Rectangle puRect = powerUp.getRect();
+            if (paddleRect.intersects(puRect)) {
+                if (powerUp.getType() == PowerUp.WIDEPADDLE && !powerUp.getWasUsed()) {
+                    thePaddle.setWidth(thePaddle.getWidth() * 2);
+                    powerUp.setWasUsed(true);
                 }
             }
         }
@@ -200,7 +199,7 @@ public class GamePanel extends JPanel implements Runnable{
             
             thePaddle.update();
             theBall.setX(thePaddle.getX() + ((thePaddle.getWidth() / 2) - theBall.getRect().getWidth() / 2));
-            theBall.setY(360);
+            theBall.setY(BrickBreaker.HEIGHT - 70);
             
         } else {
         
