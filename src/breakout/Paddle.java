@@ -35,9 +35,6 @@ public class Paddle {
         x = BrickBreaker.WIDTH / 2 - width / 2;
     }
     
-    
-    
-   
     //Places the paddle back in starting position at center of screen
     public void reset() {
 	x = PADDLE_X_START;

@@ -33,10 +33,10 @@ public class GamePanel extends JPanel implements Runnable{
     private int mousex;
     
     //Entities
-    private Ball theBall;
+    private Ball ball;
     private Paddle thePaddle;
-    private Map theMap;
-    private HUD theHud;
+    private Map map;
+    private HUD hud;
     private ArrayList<PowerUp> powerUps;
     private ArrayList<BrickExplosion> brickExplosions;
     boolean started = false;
@@ -55,8 +55,8 @@ public class GamePanel extends JPanel implements Runnable{
     private void init() throws Exception{
         isPaused = new AtomicBoolean(true);
         
-        theMap = new Map(6, 10);        
-        theHud = new HUD();       
+        map = new Map(6, 10);        
+        hud = new HUD();       
         theMouseListener = new MyMouseMotionListener();
         theListener = new MyMouseListener();
         powerUps = new ArrayList<>();         
@@ -64,7 +64,7 @@ public class GamePanel extends JPanel implements Runnable{
         addMouseMotionListener(theMouseListener);
         addMouseListener(theListener);
         
-        theBall = new Ball();        
+        ball = new Ball();        
         thePaddle = new Paddle(100, 20);       
         running = true;        
         image = new BufferedImage(BrickBreaker.WIDTH, BrickBreaker.HEIGHT, BufferedImage.TYPE_INT_RGB);       
@@ -85,23 +85,24 @@ public class GamePanel extends JPanel implements Runnable{
         while(running){
             //update
             update();
-            //draw
-            draw();
-            //display
-            repaint();
+            
+            
             
             try{
                 Thread.sleep(15);
             }catch(Exception e){
-                e.printStackTrace();
             }
+            //draw
+            draw();
+            //display
+            repaint();
         }
     }
     
     //collosion between ball and paddle
     //ball and bricks
     public void checkCollisions(){
-        Rectangle ballRect = theBall.getRect();
+        Rectangle ballRect = ball.getRect();
         Rectangle paddleRect = thePaddle.getRect();
         
         for (PowerUp powerUp : powerUps) {
@@ -114,49 +115,49 @@ public class GamePanel extends JPanel implements Runnable{
             }
         }
         
-        if(ballRect.intersects(paddleRect) && theBall.getDY() > 0) {
-            theBall.setDY(-theBall.getDY());
+        if(ballRect.intersects(paddleRect) && ball.getDY() > 0) {
+            ball.setDY(-ball.getDY());
             playSound("../Resources/click.wav", 0);
             
-            if(theBall.getX() < mousex + thePaddle.getWidth() / 4){
-                theBall.setDX(theBall.getDX() - .5);
+            if(ball.getX() < mousex + thePaddle.getWidth() / 4){
+                ball.setDX(ball.getDX() - .5);
             }
-            if(theBall.getX() < mousex + thePaddle.getWidth() && theBall.getX() > mousex + thePaddle.getWidth() / 4){
-                theBall.setDX(theBall.getDX() + .5);
+            if(ball.getX() < mousex + thePaddle.getWidth() && ball.getX() > mousex + thePaddle.getWidth() / 4){
+                ball.setDX(ball.getDX() + .5);
             }
         }
         
         
-        A: for(int row = 0; row < theMap.getMapArray().length; row++){
-            for(int col = 0; col < theMap.getMapArray()[0].length; col++){
-                int brick = theMap.getMapArray()[row][col];
+        A: for(int row = 0; row < map.getMapArray().length; row++) {
+            for(int col = 0; col < map.getMapArray()[0].length; col++) {
+                int brick = map.getMapArray()[row][col];
                 
                 if(brick > 0){
                     
-                    int brickx = col * theMap.getBrickWidth() + theMap.HOR_PAD;
-                    int bricky = row * theMap.getBrickHeight() + theMap.VERT_PAD;
-                    int brickWidth = theMap.getBrickWidth();
-                    int brickHeight = theMap.getBrickHeight();
+                    int brickx = col * map.getBrickWidth() + map.HOR_PAD;
+                    int bricky = row * map.getBrickHeight() + map.VERT_PAD;
+                    int brickWidth = map.getBrickWidth();
+                    int brickHeight = map.getBrickHeight();
 
                     Rectangle brickRect = new Rectangle(brickx, bricky, brickWidth, brickHeight); 
 
                     if(ballRect.intersects(brickRect)){
                         playSound("../Resources/glass.wav", 0);
                         
-                        if(theMap.getMapArray()[row][col] == 1){
-                            brickExplosions.add(new BrickExplosion(brickx, bricky, theMap));
+                        if(map.getMapArray()[row][col] == 1){
+                            brickExplosions.add(new BrickExplosion(brickx, bricky, map));
                             
                         }
                         
-                        if(theMap.getMapArray()[row][col] > 3){
-                            powerUps.add(new PowerUp(brickx, bricky, theMap.getMapArray()[row][col], brickWidth, brickHeight));
-                            theMap.setBrick(row, col, 3);
+                        if(map.getMapArray()[row][col] > 3){
+                            powerUps.add(new PowerUp(brickx, bricky, map.getMapArray()[row][col], brickWidth, brickHeight));
+                            map.setBrick(row, col, 3);
                         }else{
-                            theMap.hitBrick(row, col);
+                            map.hitBrick(row, col);
                         }
-                        theMap.hitBrick(row, col);
-                        theBall.setDY(-theBall.getDY());
-                        theHud.addScore(50);
+                        map.hitBrick(row, col);
+                        ball.setDY(-ball.getDY());
+                        hud.addScore(50);
                         
                         break A;
                     }
@@ -189,7 +190,7 @@ public class GamePanel extends JPanel implements Runnable{
 	isPaused.set(true);
     }
     public void checkIfOut(){
-        theBall.reset();		
+        ball.reset();		
 	stop();
 	isPaused.set(true);
     }
@@ -198,16 +199,16 @@ public class GamePanel extends JPanel implements Runnable{
         if (!start) {
             
             thePaddle.update();
-            theBall.setX(thePaddle.getX() + ((thePaddle.getWidth() / 2) - theBall.getRect().getWidth() / 2));
-            theBall.setY(BrickBreaker.HEIGHT - 70);
+            ball.setX(thePaddle.getX() + ((thePaddle.getWidth() / 2) - ball.getRect().getWidth() / 2));
+            ball.setY(BrickBreaker.HEIGHT - 70);
             
         } else {
         
             //checkIfOut();
             checkCollisions();
             thePaddle.update();
-            theBall.update();
-            //System.out.println(theBall.getDY());
+            ball.update();
+            //System.out.println(ball.getDY());
             for(PowerUp pu : powerUps){
                 pu.update();
             }
@@ -224,18 +225,18 @@ public class GamePanel extends JPanel implements Runnable{
         g.setColor(Color.WHITE);
         g.fillRect(0, 0, BrickBreaker.WIDTH, BrickBreaker.HEIGHT);
         
-        theBall.draw(g);
+        ball.draw(g);
         thePaddle.draw(g);
-        theMap.draw(g);
-        theHud.draw(g);
+        map.draw(g);
+        hud.draw(g);
         drawPowerUps();
         
-        if(theMap.isThereAWin() == true){
+        if(map.winCheck() == true){
             drawWin();
             running = false;
         }
         
-        if(theBall.youLose()){
+        if(ball.isLose()){
             drawLoser();
             running = false;
         }
@@ -319,7 +320,7 @@ public class GamePanel extends JPanel implements Runnable{
         public void mouseClicked(MouseEvent e) {
             if (!start) {
                 start = true;
-                theBall.setDY(-5);
+                ball.setDY(-5);
             }
         }
 

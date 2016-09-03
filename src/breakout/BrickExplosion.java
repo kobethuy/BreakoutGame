@@ -10,27 +10,27 @@ import java.util.ArrayList;
  */
 public class BrickExplosion {
     //Value
-    private ArrayList<BrickPiece> pieces;
-    private int x, y;
-    private Map theMap;
+    private final ArrayList<BrickPiece> pieces;
+    private final int x, y;
+    private final Map map;
     private boolean isActive;
-    private long startTime;
+    private final long startTime;
     
     //Constructor
     public BrickExplosion(int theX, int theY, Map theMap){
         x = theX;
         y = theY;
-        this.theMap = theMap;
+        this.map = theMap;
         isActive = true;
         startTime = System.nanoTime();
-        pieces = new ArrayList<BrickPiece>();
+        pieces = new ArrayList<>();
         init();
     }
-    public void init(){
+    private void init(){
         int randNum = (int)(Math.random() * 20 + 5);
         
         for (int i = 0; i < randNum; i++){
-            pieces.add(new BrickPiece(x, y, theMap));
+            pieces.add(new BrickPiece(x, y, map));
         }
     }
     public void update(){

@@ -30,6 +30,7 @@ public class Ball{
     Ball(int i, int i0, int i1, int i2, int i3) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
+    
     public void update(){
         setPosition();
     }
@@ -93,13 +94,13 @@ public class Ball{
     public void setY(double y) {
 	this.y = y;
     }
-    public boolean youLose(){
-        boolean loser = false;
+    public boolean isLose(){
+        boolean lose = false;
         
         if(y > BrickBreaker.HEIGHT - ballSize * 2){
-            loser = true;
+            lose = true;
         }
-        return loser;
+        return lose;
         
     }
     public void setOnScreen(boolean onScreen) {
