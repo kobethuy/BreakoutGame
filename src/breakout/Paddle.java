@@ -22,6 +22,7 @@ public class Paddle {
     private double targetx;
     private final int PADDLE_X_START = (BrickBreaker.WIDTH / 2) - (width / 2);
     private final int PADDLE_Y_START = BrickBreaker.HEIGHT - height;
+    public static boolean reverseMouse = false, wide = false, half = false;
     
     public final int YPOS = BrickBreaker.HEIGHT - 50;
     //Constructor
@@ -64,7 +65,11 @@ public class Paddle {
             
             g.setColor(Color.WHITE);
             g.setFont(new Font("Courier New", Font.BOLD, 18));
-            g.drawString(" Shrinking in " + (6 - (System.nanoTime() - widthTimer) / 1000000000), (int)x, YPOS + 18);
+            if (wide) {
+                g.drawString(" Shrinking in " + (6 - (System.nanoTime() - widthTimer) / 1000000000), (int)x, YPOS + 18);
+            } else {
+                g.drawString(" Normal in " + (6 - (System.nanoTime() - widthTimer) / 1000000000), (int)x, YPOS + 18);
+            }
             
         }
     }
@@ -75,7 +80,9 @@ public class Paddle {
         if(targetx > BrickBreaker.WIDTH - width){
             targetx = BrickBreaker.WIDTH - width;
         }
-        if(targetx < 0){targetx = 0;}
+        if(targetx < 0){
+            targetx = 0;
+        }
     }
     
     public Rectangle getRect(){

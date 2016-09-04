@@ -11,7 +11,7 @@ package breakout;
  */
 public class Brick {
     
-    private int health, powerUp;
+    private int health;
     
     public Brick(int health) {
         this.health = health;
@@ -23,13 +23,5 @@ public class Brick {
     
     public void setHealth(int health) {
         this.health = health;
-    }
-    
-    public int getPowerUp() {
-        return this.powerUp;
-    }
-    
-    public void setPowerUp(int powerUp) {
-        this.powerUp = powerUp;
     }
 }

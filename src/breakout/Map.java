@@ -4,8 +4,10 @@ package breakout;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
-import java.io.BufferedReader;
-import java.io.FileReader;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Random;
+import java.util.Scanner;
 
 /**
  *
@@ -14,8 +16,8 @@ import java.io.FileReader;
 public class Map {
     
     //Value
-    private int[][] map;
-    private int brickHeight, brickWidth;
+    private Brick[][] map;
+    private final int brickHeight, brickWidth;
     
     public final int HOR_PAD = 80, VERT_PAD = 50;
     
@@ -25,49 +27,39 @@ public class Map {
         brickHeight = (BrickBreaker.HEIGHT / 2 - VERT_PAD * 2) / row;
     }
     private void initMap(int row, int col) throws Exception{
-        map = new int[row][col];
-        readMap(map, "1.txt"); 
+        map = new Brick[row][col];
+        readMap(map, "1.txt");
     }
     
-    private void readMap(int[][] map, String name) throws Exception {
-        FileReader fp = new FileReader(name);
-        BufferedReader br = new BufferedReader(fp);
-        String line = br.readLine();
+    private void readMap(Brick[][] map, String name) throws Exception {
+        Path fp = Paths.get(name);
+        Scanner br = new Scanner(fp);
         int b = 0;
         
-        while(line != null) {
-            
+        while(br.hasNextLine()) {
+            String line = br.nextLine();
             for (int foo = 0; foo < line.length(); foo++) {
-                this.map[b][foo] = Integer.parseInt(String.valueOf(line.charAt(foo)));
+                this.map[b][foo] = new Brick(Integer.parseInt(String.valueOf(line.charAt(foo))));
             }
-            
-            System.out.println();
-            line = br.readLine();
             b++;
         }
     }
+    
     public void draw(Graphics2D g){
         
         for(int row = 0; row < map.length; row++){
             for(int col = 0; col < map[row].length; col++){
                 //System.out.print(map[row].length);
-                if(map[row][col] > 0){
+                if(map[row][col].getHealth() > 0){
                     
-                    if(map[row][col] == 1) {
+                    if(map[row][col].getHealth() == 1) {
                         g.setColor(new Color(0, 200, 200) );
                     }
-                    if(map[row][col] == 2) {
+                    if(map[row][col].getHealth() == 2) {
                         g.setColor(new Color(0, 150, 150) );
                     }
-                    if(map[row][col] == 3) {
+                    if(map[row][col].getHealth() == 3) {
                         g.setColor(new Color(0, 100, 100) );
-                    }
-                    
-                    if(map[row][col] == PowerUp.WIDEPADDLE){
-                        g.setColor(PowerUp.WIDECOLOR);
-                    }
-                    if(map[row][col] == PowerUp.FASTBALL){
-                        g.setColor(PowerUp.FASTCOLOR);
                     }
                     
                     g.fillRect(col * brickWidth + HOR_PAD, row * brickHeight + VERT_PAD, brickWidth, brickHeight);
@@ -77,7 +69,6 @@ public class Map {
                 
                 }   
             }
-            System.out.println();
         }
     }
     
@@ -87,9 +78,9 @@ public class Map {
        
        int bricksRemaining = 0;
        
-        for (int[] mapArr : map) {
+        for (Brick[] mapArr : map) {
             for (int col = 0; col < map[0].length; col++) {
-                bricksRemaining += mapArr[col];
+                bricksRemaining += mapArr[col].getHealth();
             }
         }
         if(bricksRemaining == 0){
@@ -99,11 +90,11 @@ public class Map {
        return isWin;
     }
     
-    public int[][] getMapArray(){
+    public Brick[][] getMapArray(){
         return map;
     }
     public void setBrick(int row, int col, int value){
-        map[row][col] = value;
+        map[row][col].setHealth(value);
     }
     public int getBrickWidth(){
         return brickWidth;
@@ -112,9 +103,9 @@ public class Map {
         return brickHeight;
     }
     public void hitBrick(int row, int col){
-        map[row][col] -= 1;
-        if(map[row][col] < 0){
-            map[row][col] = 0;
+        map[row][col].setHealth(map[row][col].getHealth() - 1);
+        if(map[row][col].getHealth() < 0){
+            map[row][col].setHealth(0);
         }
     }
 }

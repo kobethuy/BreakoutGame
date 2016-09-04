@@ -14,6 +14,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
@@ -39,7 +40,9 @@ public class GamePanel extends JPanel implements Runnable{
     private HUD hud;
     private ArrayList<PowerUp> powerUps;
     private ArrayList<BrickExplosion> brickExplosions;
-    boolean started = false;
+    private ArrayList<Ball> ballList;
+    private boolean started = false;
+    private Random ran;
     
     //The game
     private Thread game;
@@ -59,11 +62,13 @@ public class GamePanel extends JPanel implements Runnable{
         hud = new HUD();       
         theMouseListener = new MyMouseMotionListener();
         theListener = new MyMouseListener();
-        powerUps = new ArrayList<>();         
+        powerUps = new ArrayList<>();
+        ballList = new ArrayList<>();
         brickExplosions = new ArrayList<>();        
         addMouseMotionListener(theMouseListener);
         addMouseListener(theListener);
         
+        ran = new Random();
         ball = new Ball();        
         thePaddle = new Paddle(100, 20);       
         running = true;        
@@ -71,6 +76,7 @@ public class GamePanel extends JPanel implements Runnable{
         g = (Graphics2D) image.getGraphics();        
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         
+        ballList.add(ball);
         game = new Thread(this);
 	game.start();
 	stop();
@@ -85,9 +91,7 @@ public class GamePanel extends JPanel implements Runnable{
         while(running){
             //update
             update();
-            
-            
-            
+
             try{
                 Thread.sleep(15);
             }catch(Exception e){
@@ -108,9 +112,30 @@ public class GamePanel extends JPanel implements Runnable{
         for (PowerUp powerUp : powerUps) {
             Rectangle puRect = powerUp.getRect();
             if (paddleRect.intersects(puRect)) {
-                if (powerUp.getType() == PowerUp.WIDEPADDLE && !powerUp.getWasUsed()) {
-                    thePaddle.setWidth(thePaddle.getWidth() * 2);
-                    powerUp.setWasUsed(true);
+                switch (powerUp.getType()) {
+                    
+                    case 0:
+                        //Paddle.reverseMouse = true;
+                        break;
+                    case 1:
+                        if (!Paddle.wide) {
+                            Paddle.wide = true;
+                            thePaddle.setWidth(thePaddle.getWidth() * 2);
+                        }
+                        break;
+                    case 2:
+                        if (!Paddle.half) {
+                            Paddle.half = true;
+                            thePaddle.setWidth(thePaddle.getWidth() / 2);
+                        }
+                        break;
+                    case 3:
+                        ballList.add(new Ball(  ballList.get(0).getX(), 
+                                                ballList.get(0).getY(), 
+                                                ballList.get(0).getDX(), 
+                                                ballList.get(0).getDY()));
+                        
+                        break;
                 }
             }
         }
@@ -127,10 +152,9 @@ public class GamePanel extends JPanel implements Runnable{
             }
         }
         
-        
         A: for(int row = 0; row < map.getMapArray().length; row++) {
             for(int col = 0; col < map.getMapArray()[0].length; col++) {
-                int brick = map.getMapArray()[row][col];
+                int brick = map.getMapArray()[row][col].getHealth();
                 
                 if(brick > 0){
                     
@@ -144,16 +168,12 @@ public class GamePanel extends JPanel implements Runnable{
                     if(ballRect.intersects(brickRect)){
                         playSound("../Resources/glass.wav", 0);
                         
-                        if(map.getMapArray()[row][col] == 1){
-                            brickExplosions.add(new BrickExplosion(brickx, bricky, map));
-                            
+                        if(map.getMapArray()[row][col].getHealth() == 1){
+                            brickExplosions.add(new BrickExplosion(brickx, bricky, map));  
                         }
                         
-                        if(map.getMapArray()[row][col] > 3){
-                            powerUps.add(new PowerUp(brickx, bricky, map.getMapArray()[row][col], brickWidth, brickHeight));
-                            map.setBrick(row, col, 3);
-                        }else{
-                            map.hitBrick(row, col);
+                        if ((ran.nextInt(5) == 1) && (brick == 1)) {
+                            powerUps.add(new PowerUp(brickx, bricky, ran.nextInt(4), brickWidth, brickHeight));
                         }
                         map.hitBrick(row, col);
                         ball.setDY(-ball.getDY());
@@ -166,7 +186,6 @@ public class GamePanel extends JPanel implements Runnable{
         }
     }
     
-   
     public void reset() {
         requestFocusInWindow();
     }
@@ -189,11 +208,13 @@ public class GamePanel extends JPanel implements Runnable{
 	game.stop();
 	isPaused.set(true);
     }
+    
     public void checkIfOut(){
         ball.reset();		
 	stop();
 	isPaused.set(true);
     }
+    
     public void update(){
         
         if (!start) {
@@ -207,11 +228,9 @@ public class GamePanel extends JPanel implements Runnable{
             //checkIfOut();
             checkCollisions();
             thePaddle.update();
-            ball.update();
-            //System.out.println(ball.getDY());
-            for(PowerUp pu : powerUps){
-                pu.update();
-            }
+            for (Ball b : ballList)
+                b.update();
+
             for(int i = 0; i < brickExplosions.size(); i++){
                 brickExplosions.get(i).update();
                 if(!brickExplosions.get(i).getIsActive()){
@@ -220,12 +239,15 @@ public class GamePanel extends JPanel implements Runnable{
             }
         }
     }
+    
     public void draw(){
         //draw background
         g.setColor(Color.WHITE);
         g.fillRect(0, 0, BrickBreaker.WIDTH, BrickBreaker.HEIGHT);
         
-        ball.draw(g);
+        for (Ball b : ballList)
+            b.draw(g);
+        
         thePaddle.draw(g);
         map.draw(g);
         hud.draw(g);
@@ -236,17 +258,20 @@ public class GamePanel extends JPanel implements Runnable{
             running = false;
         }
         
-        if(ball.isLose()){
-            drawLoser();
-            running = false;
+        for (Ball b : ballList) {
+            if (b.isLose() && ballList.size() == 1){
+                drawLoser();
+                running = false;
+            } else if (b.isLose() && ballList.size() > 1) {
+                ballList.remove(b);
+            }
         }
         
         for(BrickExplosion bs : brickExplosions){
             bs.draw(g);
-        }
-         
-        
+        }     
     }
+    
     public void drawWin(){
         int option = JOptionPane.showOptionDialog(this, "You won the game! Would you like to start playing from the beginning with the same score?", "A winner is you!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new Object[]{"Yes", "No"}, null);
         if (option == 0 || option == JOptionPane.CLOSED_OPTION) {
@@ -257,20 +282,27 @@ public class GamePanel extends JPanel implements Runnable{
     
     public void drawPowerUps(){
         for(PowerUp pu : powerUps){
+            pu.update();
             pu.draw(g);
         }
     }
     
     public void drawLoser(){
         int option = JOptionPane.showOptionDialog(this, "You lost the game! Would you like to continue?", "Lost the game!", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new Object[]{"Yes", "No"}, null);
-        if (option == 0) {
-            reset();
-        } else if (option == 1) {
-            System.exit(0);
-        } else if (option == JOptionPane.CLOSED_OPTION) {
-            reset();
+        switch (option) {
+            case 0:
+                reset();
+                break;
+            case 1:
+                System.exit(0);
+            case JOptionPane.CLOSED_OPTION:
+                reset();
+                break;
+            default:
+                break;
         }
     }
+    
     //Start game screen
     public void drawStart(){
         for(int i = 100; i > 0; i--){
@@ -312,7 +344,6 @@ public class GamePanel extends JPanel implements Runnable{
         } 
     }
 
-   
     //click left mouse to accelerate to start
     private class MyMouseListener implements MouseListener{
 
@@ -344,6 +375,7 @@ public class GamePanel extends JPanel implements Runnable{
             
         }
     }
+    
     //Control the paddle by mouse
     private class MyMouseMotionListener extends MouseAdapter{
 
@@ -368,8 +400,16 @@ public class GamePanel extends JPanel implements Runnable{
 
         @Override
         public void mouseMoved(MouseEvent e) {
-            mousex = e.getX();
-            thePaddle.mouseMoved(e.getX());
+            if (!Paddle.reverseMouse) {
+                mousex = e.getX();
+            } else {
+                if (e.getX() < BrickBreaker.WIDTH) {
+                    mousex = BrickBreaker.WIDTH - e.getX();
+                } else {
+                    mousex = e.getX() - BrickBreaker.WIDTH;
+                }
+            }
+            thePaddle.mouseMoved(mousex);
         }      
     }
 }

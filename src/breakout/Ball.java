@@ -16,21 +16,22 @@ public class Ball{
     //Value
     private double x, y;
     private double dx = 1, dy = -1;
-    int ballSize = 20;
+    private int ballSize = 20;
     private boolean onScreen;
     private final double BALL_X_START = BrickBreaker.WIDTH / 2 - ballSize / 2;
     private final double BALL_Y_START = BrickBreaker.HEIGHT - 70;
     
     public Ball(){ 
-
-        this.ballSize = 20;
-    
-    }
-
-    Ball(int i, int i0, int i1, int i2, int i3) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        this.ballSize = 20;    
     }
     
+    public Ball(double x, double y, double dx, double dy) {
+        this.x = x;
+        this.y = y;
+        this.dx = dx;
+        this.dy = dy;
+    }
+
     public void update(){
         setPosition();
     }
@@ -42,8 +43,6 @@ public class Ball{
 	dx = 1;
 	dy = -1;
     }
-    
-    
     
     public void setPosition(){
         setX(getX() + getDX());
@@ -94,6 +93,7 @@ public class Ball{
     public void setY(double y) {
 	this.y = y;
     }
+    
     public boolean isLose(){
         boolean lose = false;
         

@@ -17,28 +17,24 @@ public class PowerUp {
     private boolean isOnScreen;
     private boolean wasUsed;
     
-    private Color color;
-    
-    public final static int WIDEPADDLE = 4;
-    public final static int FASTBALL = 5;
-    public final static Color WIDECOLOR = Color.GREEN;
-    public final static Color FASTCOLOR = Color.RED;
+    private final Color color;
+
+    public final static Color COLOR = Color.GREEN;
     
     //Constructor
-    public PowerUp(int xStart, int yStart, int theType, int theWidth, int theHeight){
+    public PowerUp(int x, int y, int type, int width, int height){
         
-        x = xStart;
-        y = yStart;
-        type = theType;
-        width = theWidth;
-        height = theHeight;
+        this.x = x;
+        this.y = y;
+        this.type = type;
+        this.width = width;
+        this.height = height; 
+        color = COLOR;
         
         if(type < 4){ type = 4;}
         if(type > 5){ type = 5;}
-        if(type == WIDEPADDLE){color = WIDECOLOR;}
-        if(type == FASTBALL){color = FASTCOLOR;}
         
-        dy =(int)(Math.random() * 6 + 1);
+        dy = 5;
         
         wasUsed = false;
     }
@@ -79,9 +75,13 @@ public class PowerUp {
     public void setIsOnScreen(boolean onScreen){
         isOnScreen = onScreen;
     }
-    public boolean getWasUsed(){ return wasUsed;}
+    public boolean getWasUsed(){ 
+        return wasUsed;
+    }
     
-    public void setWasUsed(boolean used){wasUsed = used;}
+    public void setWasUsed(boolean used){
+        wasUsed = used;
+    }
     
     public Rectangle getRect(){
         return new Rectangle(x, y, width, height);
