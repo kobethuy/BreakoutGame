@@ -14,6 +14,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.sound.sampled.AudioInputStream;
@@ -106,7 +107,11 @@ public class GamePanel extends JPanel implements Runnable{
     //collosion between ball and paddle
     //ball and bricks
     public void checkCollisions(){
-        Rectangle ballRect = ball.getRect();
+        ArrayList<Rectangle> ballRect = new ArrayList<>();
+        
+        for (Ball b : ballList)
+            ballRect.add(b.getRect());
+        
         Rectangle paddleRect = thePaddle.getRect();
         
         for (PowerUp powerUp : powerUps) {
@@ -132,7 +137,7 @@ public class GamePanel extends JPanel implements Runnable{
                     case 3:
                         ballList.add(new Ball(  ballList.get(0).getX(), 
                                                 ballList.get(0).getY(), 
-                                                ballList.get(0).getDX(), 
+                                                -ballList.get(0).getDX(), 
                                                 ballList.get(0).getDY()));
                         
                         break;
@@ -140,48 +145,54 @@ public class GamePanel extends JPanel implements Runnable{
             }
         }
         
-        if(ballRect.intersects(paddleRect) && ball.getDY() > 0) {
-            ball.setDY(-ball.getDY());
-            playSound("../Resources/click.wav", 0);
-            
-            if(ball.getX() < mousex + thePaddle.getWidth() / 4){
-                ball.setDX(ball.getDX() - .5);
+        for (int a = 0; a < ballRect.size(); a++) {
+            if(ballRect.get(a).intersects(paddleRect) && ballList.get(a).getDY() > 0) {
+                ballList.get(a).setDY(-ballList.get(a).getDY());
+                playSound("../Resources/click.wav", 0);
+
+                if(ballList.get(a).getX() < mousex + thePaddle.getWidth() / 4){
+                    ballList.get(a).setDX(ballList.get(a).getDX() - .5);
+                }
+                if( ballList.get(a).getX() < mousex + thePaddle.getWidth() && 
+                    ballList.get(a).getX() > mousex + thePaddle.getWidth() / 4) {
+                    ballList.get(a).setDX(ballList.get(a).getDX() + .5);
+                }
             }
-            if(ball.getX() < mousex + thePaddle.getWidth() && ball.getX() > mousex + thePaddle.getWidth() / 4){
-                ball.setDX(ball.getDX() + .5);
-            }
-        }
         
-        A: for(int row = 0; row < map.getMapArray().length; row++) {
-            for(int col = 0; col < map.getMapArray()[0].length; col++) {
-                int brick = map.getMapArray()[row][col].getHealth();
-                
-                if(brick > 0){
-                    
-                    int brickx = col * map.getBrickWidth() + map.HOR_PAD;
-                    int bricky = row * map.getBrickHeight() + map.VERT_PAD;
-                    int brickWidth = map.getBrickWidth();
-                    int brickHeight = map.getBrickHeight();
+            A: for(int row = 0; row < map.getMapArray().length; row++) {
+                for(int col = 0; col < map.getMapArray()[0].length; col++) {
+                    int brick = map.getMapArray()[row][col].getHealth();
 
-                    Rectangle brickRect = new Rectangle(brickx, bricky, brickWidth, brickHeight); 
+                    if(brick > 0){
 
-                    if(ballRect.intersects(brickRect)){
-                        playSound("../Resources/glass.wav", 0);
-                        
-                        if(map.getMapArray()[row][col].getHealth() == 1){
-                            brickExplosions.add(new BrickExplosion(brickx, bricky, map));  
+                        int brickx = col * map.getBrickWidth() + map.HOR_PAD;
+                        int bricky = row * map.getBrickHeight() + map.VERT_PAD;
+                        int brickWidth = map.getBrickWidth();
+                        int brickHeight = map.getBrickHeight();
+
+                        Rectangle brickRect = new Rectangle(brickx, bricky, brickWidth, brickHeight); 
+
+                        if(ballRect.get(a).intersects(brickRect)){
+                            playSound("../Resources/glass.wav", 0);
+
+                            if(map.getMapArray()[row][col].getHealth() == 1){
+                                brickExplosions.add(new BrickExplosion(brickx, bricky, map));  
+                            }
+
+                            if ((ran.nextInt(5) == 1) && (brick == 1)) {
+                                powerUps.add(new PowerUp(brickx, bricky, ran.nextInt(4), brickWidth, brickHeight));
+                                //powerUps.add(new PowerUp(brickx, bricky, 3, brickWidth, brickHeight));
+
+                            }
+                            
+                            map.hitBrick(row, col);
+                            ballList.get(a).setDY(-ballList.get(a).getDY());
+                            hud.addScore(50);
+
+                            break A;
                         }
-                        
-                        if ((ran.nextInt(5) == 1) && (brick == 1)) {
-                            powerUps.add(new PowerUp(brickx, bricky, ran.nextInt(4), brickWidth, brickHeight));
-                        }
-                        map.hitBrick(row, col);
-                        ball.setDY(-ball.getDY());
-                        hud.addScore(50);
-                        
-                        break A;
-                    }
-                }               
+                    }               
+                }
             }
         }
     }
@@ -257,13 +268,14 @@ public class GamePanel extends JPanel implements Runnable{
             drawWin();
             running = false;
         }
-        
-        for (Ball b : ballList) {
+        Iterator<Ball> iter = ballList.iterator();
+        while (iter.hasNext()) {
+            Ball b = iter.next();
             if (b.isLose() && ballList.size() == 1){
                 drawLoser();
                 running = false;
             } else if (b.isLose() && ballList.size() > 1) {
-                ballList.remove(b);
+                iter.remove();
             }
         }
         
