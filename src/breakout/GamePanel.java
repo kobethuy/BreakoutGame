@@ -3,20 +3,26 @@ package breakout;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import javax.swing.JPanel;
 import java.awt.Graphics2D;
-import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.io.File;
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.imageio.ImageIO;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
@@ -28,7 +34,7 @@ public class GamePanel extends JPanel implements Runnable{
     
     //Value
     private boolean running, start = false;
-    private BufferedImage image;
+    private BufferedImage image, bg;
     private Graphics2D g;
     private MyMouseMotionListener theMouseListener;
     private MyMouseListener theListener;
@@ -76,6 +82,7 @@ public class GamePanel extends JPanel implements Runnable{
         image = new BufferedImage(BrickBreaker.WIDTH, BrickBreaker.HEIGHT, BufferedImage.TYPE_INT_RGB);       
         g = (Graphics2D) image.getGraphics();        
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        bg = ImageIO.read(new File(getClass().getResource("../Resources/img/background.jpg").toURI()));
         
         ballList.add(ball);
         game = new Thread(this);
@@ -90,9 +97,9 @@ public class GamePanel extends JPanel implements Runnable{
         //Loop
         
         while(running){
+            
             //update
             update();
-
             try{
                 Thread.sleep(15);
             }catch(Exception e){
@@ -113,11 +120,13 @@ public class GamePanel extends JPanel implements Runnable{
             ballRect.add(b.getRect());
         
         Rectangle paddleRect = thePaddle.getRect();
-        
-        for (PowerUp powerUp : powerUps) {
-            Rectangle puRect = powerUp.getRect();
+        Iterator<PowerUp> p = powerUps.iterator();
+        while (p.hasNext()) {
+            PowerUp pu = p.next();
+            Rectangle puRect = pu.getRect();
+            
             if (paddleRect.intersects(puRect)) {
-                switch (powerUp.getType()) {
+                switch (pu.getType()) {
                     
                     case 0:
                         //Paddle.reverseMouse = true;
@@ -142,13 +151,16 @@ public class GamePanel extends JPanel implements Runnable{
                         
                         break;
                 }
+                p.remove();
             }
+            if (!pu.getIsOnScreen())
+                p.remove();
         }
         
         for (int a = 0; a < ballRect.size(); a++) {
             if(ballRect.get(a).intersects(paddleRect) && ballList.get(a).getDY() > 0) {
                 ballList.get(a).setDY(-ballList.get(a).getDY());
-                playSound("../Resources/click.wav", 0);
+                playSound("../Resources/sound/click.wav", 0);
 
                 if(ballList.get(a).getX() < mousex + thePaddle.getWidth() / 4){
                     ballList.get(a).setDX(ballList.get(a).getDX() - .5);
@@ -173,13 +185,13 @@ public class GamePanel extends JPanel implements Runnable{
                         Rectangle brickRect = new Rectangle(brickx, bricky, brickWidth, brickHeight); 
 
                         if(ballRect.get(a).intersects(brickRect)){
-                            playSound("../Resources/glass.wav", 0);
+                            playSound("../Resources/sound/glass.wav", 0);
 
                             if(map.getMapArray()[row][col].getHealth() == 1){
                                 brickExplosions.add(new BrickExplosion(brickx, bricky, map));  
                             }
 
-                            if ((ran.nextInt(5) == 1) && (brick == 1)) {
+                            if ((ran.nextInt(1) == 1) && (brick == 1)) {
                                 powerUps.add(new PowerUp(brickx, bricky, ran.nextInt(4), brickWidth, brickHeight));
                                 //powerUps.add(new PowerUp(brickx, bricky, 3, brickWidth, brickHeight));
 
@@ -195,6 +207,15 @@ public class GamePanel extends JPanel implements Runnable{
                 }
             }
         }
+    }
+    
+    @Override
+    public void paintComponent(Graphics g){
+        Graphics2D g2 = (Graphics2D) g;
+        
+        g2.drawImage(image, 0, 0, BrickBreaker.WIDTH, BrickBreaker.HEIGHT, null);
+        
+        g2.dispose();
     }
     
     public void reset() {
@@ -251,10 +272,18 @@ public class GamePanel extends JPanel implements Runnable{
         }
     }
     
-    public void draw(){
+    public void draw() {
         //draw background
+        
+        try { 
+            g.drawImage(bg, 0, 0, null);
+        } catch (Exception ex) {
+            Logger.getLogger(GamePanel.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        /*
         g.setColor(Color.WHITE);
         g.fillRect(0, 0, BrickBreaker.WIDTH, BrickBreaker.HEIGHT);
+        */
         
         for (Ball b : ballList)
             b.draw(g);
@@ -333,14 +362,6 @@ public class GamePanel extends JPanel implements Runnable{
         
     }
     
-    @Override
-    public void paintComponent(Graphics g){
-        Graphics2D g2 = (Graphics2D) g;
-        
-        g2.drawImage(image, 0, 0, BrickBreaker.WIDTH, BrickBreaker.HEIGHT, null);
-        
-        g2.dispose();
-    }
     //make the sound
     public void playSound(String soundFile, int times){
         try{

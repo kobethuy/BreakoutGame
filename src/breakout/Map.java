@@ -4,10 +4,19 @@ package breakout;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.GraphicsConfiguration;
+import java.awt.GraphicsEnvironment;
+import java.awt.Transparency;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Random;
+import java.util.ArrayList;
 import java.util.Scanner;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.imageio.ImageIO;
 
 /**
  *
@@ -49,10 +58,8 @@ public class Map {
         
         for(int row = 0; row < map.length; row++){
             for(int col = 0; col < map[row].length; col++){
-                //System.out.print(map[row].length);
                 if(map[row][col].getHealth() > 0){
-                    
-                    if(map[row][col].getHealth() == 1) {
+                     if(map[row][col].getHealth() == 1) {
                         g.setColor(new Color(0, 200, 200) );
                     }
                     if(map[row][col].getHealth() == 2) {
@@ -66,7 +73,6 @@ public class Map {
                     g.setStroke(new BasicStroke(2));
                     g.setColor(Color.WHITE);
                     g.drawRect(col * brickWidth + HOR_PAD, row * brickHeight + VERT_PAD, brickWidth, brickHeight);
-                
                 }   
             }
         }

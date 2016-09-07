@@ -5,6 +5,12 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.imageio.ImageIO;
 
 /**
  *
@@ -45,32 +51,50 @@ public class Paddle {
     public void update(){
         if((System.nanoTime() - widthTimer) / 1000 > 6000000){
             width = startWidth;
-            altWidth = false;
+            if (altWidth) {
+                altWidth = false;
+            }
+            if (reverseMouse) {
+                reverseMouse = false;
+            }
+            if (wide)
+                wide = false;
+            if (half)
+                half = false;
         }
         x +=(targetx - x) * .3;
         
         int dif = (int)Math.abs(targetx -x) / 5;
         height = startHeight - dif;
-        if(height < 2){height = 2;}
+        if(height < 2){
+            height = 2;
+        }
     }
     
     //draw
     public void draw(Graphics2D g){
         
         int yDraw = YPOS + (startHeight - height) / 2;
+        /*
+        try {
+            g.drawImage(ImageIO.read(new File(getClass().getResource("../Resources/img/paddle.png").toURI())), (int) x, yDraw, null);
+        } catch (Exception ex) {
+            Logger.getLogger(GamePanel.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        */
+        
         g.setColor(Color.DARK_GRAY);
         g.fillRect((int)x, yDraw, width, height);
         
-        if(altWidth == true){
+        if(altWidth || reverseMouse){
             
             g.setColor(Color.WHITE);
             g.setFont(new Font("Courier New", Font.BOLD, 18));
-            if (wide) {
-                g.drawString(" Shrinking in " + (6 - (System.nanoTime() - widthTimer) / 1000000000), (int)x, YPOS + 18);
-            } else {
-                g.drawString(" Normal in " + (6 - (System.nanoTime() - widthTimer) / 1000000000), (int)x, YPOS + 18);
-            }
-            
+
+            g.drawString("" + (6 - (System.nanoTime() - widthTimer) / 1000000000), (int)x, YPOS + 18);
+
+            if (reverseMouse)
+                g.drawString("" + (6 - (System.nanoTime() - widthTimer) / 1000000000), (int)x + 2, YPOS + 18);
         }
     }
     

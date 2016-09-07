@@ -4,6 +4,12 @@ package breakout;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.imageio.ImageIO;
 
 
 /**
@@ -36,11 +42,21 @@ public class PowerUp {
         
         dy = 5;
         
+        isOnScreen = true;
+        
         wasUsed = false;
     }
     public void draw(Graphics2D g){
+        
         g.setColor(color);
         g.fillRect(x, y, width, height);
+        /*
+        try {
+            g.drawImage(ImageIO.read(new File(getClass().getResource("../Resources/img/powerup.png").toURI())), (int) x, (int) y, null);
+        } catch (Exception ex) {
+            Logger.getLogger(GamePanel.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        */
     }
     public void update(){
         y += dy;

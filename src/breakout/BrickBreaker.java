@@ -11,14 +11,10 @@ public class BrickBreaker {
     
     public static void main(String[] args) throws Exception{
         
-        
         //Frame
         JFrame theFrame = new JFrame("Breakout Game");
         theFrame.setLocation(0, 0);
-        
-        
-        
-        
+
         //Main playing area
         GamePanel thePanel = new GamePanel();
         theFrame.add(thePanel, BorderLayout.CENTER);
@@ -28,5 +24,7 @@ public class BrickBreaker {
         theFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         theFrame.setVisible(true);
         thePanel.run();
+
+        //Test t = new Test();
     }
 }

@@ -5,6 +5,11 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.io.IOException;
+import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.imageio.ImageIO;
 
 /**
  *
@@ -57,9 +62,18 @@ public class Ball{
         }
     }
     public void draw(Graphics2D g){
+        /*
+        try {
+            URL bg = getClass().getResource("../Resources/img/ball.png");
+            g.drawImage(ImageIO.read(bg), (int) x, (int) y, null);
+        } catch (IOException ex) {
+            Logger.getLogger(GamePanel.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        */
         g.setColor(Color.DARK_GRAY);
         g.setStroke(new BasicStroke(4));
         g.fillOval((int)x, (int)y, ballSize, ballSize);
+        
     }
     
     public Rectangle getRect(){
